@@ -1,43 +1,83 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12/05/2025 04:16:08 PM
--- Design Name: 
--- Module Name: KeyGen - rtl
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
 
 entity KeyGen is
-    Port ( clk : in STD_LOGIC);
-end KeyGen;
+    port (
+        clk: in std_logic;
+        en: in std_logic;
+        prime1_key, prime2_key: buffer integer;
+        encryption_key, decryption_key, n_key: out integer
+    );
+end entity KeyGen;
 
 architecture rtl of KeyGen is
 
+    component RandomPrimeGen is
+        port (
+            clk: in std_logic;
+            en: in std_logic;
+            prime1, prime2: out integer
+        );
+    end component RandomPrimeGen;
+
+    --Coprime Testing Function
+    function IsCoprime(A, B: INTEGER) return BOOLEAN is
+        variable Remainder: INTEGER;
+        variable TempA, TempB: INTEGER;
+    begin
+        TempA := A;
+        TempB := B;
+        if TempA > TempB then
+            TempA := B;
+            TempB := A;
+        end if;
+
+        loop
+            Remainder := TempB mod TempA;
+            exit when Remainder = 0;
+            TempB := TempA;
+            TempA := Remainder;
+        end loop;
+
+        return TempA = 1;
+    end IsCoprime;
+
 begin
+    RandomPrimeGen1: RandomPrimeGen port map (
+        clk => clk, 
+        en => en, 
+        prime1 => prime1_key, 
+        prime2 => prime2_key
+    );
 
+    process(clk)
+        variable N, T, e, d: integer := 0;
+    begin
+        if rising_edge(clk) AND en = '1' then   
+            N := prime1_key * prime2_key;
+            T := (prime1_key - 1) * (prime2_key - 1);         
 
-end rtl;
+            --Algorithm to find e (encryption key)
+            for i in 2 to T - 1 loop
+                if T mod i /= 0 and N mod i /= 0 and IsCoprime(i, T) and IsCoprime(i, N) then
+                    e := i;
+                    exit;
+                end if;
+            end loop;
+            
+            --Algorithm to find d (decryption key)
+            for i in 1 to T loop
+                if (e * i) mod T = 1 then
+                    d := i;
+                    exit;
+                end if;
+            end loop;
+        end if;
+
+        encryption_key <= e;
+        decryption_key <= d;
+        n_key <= N;
+    end process;
+
+end architecture rtl;

@@ -1,43 +1,72 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12/05/2025 04:13:46 PM
--- Design Name: 
--- Module Name: RandomPrimeGen - rtl
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+use IEEE.math_real.all;
 
 entity RandomPrimeGen is
-    Port ( clk : in STD_LOGIC);
-end RandomPrimeGen;
+    port (
+        clk: in std_logic;
+        en: in std_logic;
+        prime1, prime2: buffer integer
+    );
+end entity RandomPrimeGen;
 
 architecture rtl of RandomPrimeGen is
 
+
 begin
+    process(clk)
+        variable seed1: integer := 1;
+        variable seed2: integer := 2;
+        variable rand_int1, rand_int2: integer;
+        variable is_prime1, is_prime2: boolean;
 
+        --Random Number Generator Function
+        impure function rand_int_gen(
+            min: integer;
+            max: integer
+        ) return integer is
+            variable randomValue: real;
+        begin
+            uniform(seed1, seed2, randomValue);
+            return integer(round(randomValue * real(max - min + 1) + real(min) - 0.5));
+        end function;
 
-end rtl;
+    begin            
+        if rising_edge(clk) AND en = '1' then
+            is_prime1 := false;
+            is_prime2 := false;
+
+            while not (is_prime1 and is_prime2) loop
+                rand_int1 := rand_int_gen(0, 8);
+                rand_int2 := rand_int_gen(0, 8);
+
+                --Primality testing using trial division method
+                -- Check if the first random number is prime
+                is_prime1 := true;
+                for i in 2 to integer(sqrt(real(rand_int1))) loop
+                    if rand_int1 mod i = 0 then
+                        is_prime1 := false;
+                        exit;
+                    end if;
+                end loop;
+
+                -- Check if the second random number is prime
+                is_prime2 := true;
+                for i in 2 to integer(sqrt(real(rand_int2))) loop
+                    if rand_int2 mod i = 0 then
+                        is_prime2 := false;
+                        exit;
+                    end if;
+                end loop;
+            end loop;
+
+            -- Assign the final results
+            prime1 <= rand_int1;
+            prime2 <= rand_int2;
+        end if;
+    end process;
+
+    
+    
+end architecture rtl;
