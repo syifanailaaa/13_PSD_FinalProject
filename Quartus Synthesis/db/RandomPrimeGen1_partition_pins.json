@@ -1,0 +1,49 @@
+{
+	"partitions" : [
+		{
+			"name" : "Top",
+			"pins" : [
+				{
+					"name" : "prime1[0]",
+					"strict" : false
+				},
+				{
+					"name" : "prime1[1]",
+					"strict" : false
+				},
+				{
+					"name" : "prime1[2]",
+					"strict" : false
+				},
+				{
+					"name" : "prime1[3]",
+					"strict" : false
+				},
+				{
+					"name" : "prime2[0]",
+					"strict" : false
+				},
+				{
+					"name" : "prime2[1]",
+					"strict" : false
+				},
+				{
+					"name" : "prime2[2]",
+					"strict" : false
+				},
+				{
+					"name" : "prime2[3]",
+					"strict" : false
+				},
+				{
+					"name" : "clk",
+					"strict" : false
+				},
+				{
+					"name" : "en",
+					"strict" : false
+				}
+			]
+		}
+	]
+}
